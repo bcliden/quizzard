@@ -94,7 +94,9 @@ class Game {
         if (!name) {
             throw new Error('No name specified')
         }
-        if (this.users.some(el => el.name === name)) {
+        if (this.users.some(el => {
+            return el.name === name
+        })) {
             // throw new Error('User already registered.')
             return
         }
@@ -151,24 +153,26 @@ app.get('/', (req, res) => {
 });
 
 app.post('/join', (req, res) => {
-    console.log(req.body)
-    const { roomCode, name } = req.body
+    console.log("JOIN: ", req.body)
+    let { roomCode, name } = req.body
+    roomCode = roomCode.toUpperCase()
+    name = name.toLowerCase()
     try {
         const game = singleton.findGame(roomCode)
         game.addUser(name)
-        res.status(200).json({ roomCode, message: `Found game code. Your host is ${game.hostName}. Enjoy!`})
+        res.status(200).json({ roomCode, userName: name, hostName: game.hostName, message: `Found game code. Your host is ${game.hostName}. Enjoy!`})
     } catch (err) {
-        console.log(err)
         res.status(500).json({ message: "Something went wrong. Please try again." })
     }
 })
 
 app.post('/create', (req, res) => {
-    console.log(req.body)
-    const { hostName } = req.body
+    console.log("CREATE: ", req.body)
+    let { hostName } = req.body
+    hostName = hostName.toLowerCase()
     try {
         const roomCode = singleton.createGame(hostName)
-        res.status(201).json({ roomCode, message: "Room created. Enjoy!" })
+        res.status(201).json({ roomCode, hostName, message: "Room created. Enjoy!" })
     } catch (err) {
         res.status(500).json({ message: "Something went wrong. Please try again." })
     }
